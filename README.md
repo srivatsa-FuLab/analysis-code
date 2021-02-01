@@ -1,9 +1,9 @@
 # analysis-code
-##Collection of code for for data analysis 
+## Collection of code for for data analysis 
 
 
-##spe_plotter.m
-###Plot spectra from princton-tech winspec *.spe file. 
+### spe_plotter.m
+##### Plot spectra from princton-tech winspec *.spe file. 
 ```
 Additional functionality:
 - Works for both the old (blue) and new (Acton-2750) spectrometer models [Brynn_mc and NV_mc respectively]
@@ -17,8 +17,8 @@ Dependencies:
 - loadSPE.m
 ```
 
-##PLE_analyzer.m
-###Analysis of PLE data (for both manual and automated scans)  
+### PLE_analyzer.m
+##### Analysis of PLE data (for both manual and automated scans)  
 ```
 Designed to work with new focus velocity#2 (HP)
 

@@ -1,5 +1,5 @@
 # analysis-code
-## Collection of code for for data analysis 
+### Collection of code for for data analysis 
 
 
 ### spe_plotter.m

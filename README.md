@@ -2,7 +2,7 @@
 Collection of code for for data analysis 
 
 
-spePlotter.m : Plot spectra from princton-tech winspec *.spe file. 
+spe_Plotter.m : Plot spectra from princton-tech winspec *.spe file. 
 
                Additional functionality:
                - Works for both old and new spectrometer models

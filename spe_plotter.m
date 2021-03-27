@@ -1,15 +1,17 @@
 %Change the path below to the required folder
-[files,dir] = uigetfile('D:\Dropbox\Projects\*1800*.spe', 'MultiSelect','on'); 
+[files,dir] = uigetfile('D:\Dropbox\Projects\.spe', 'MultiSelect','on'); 
 if ischar(files)
     files = {files}; 
 end
 
+figure
+
 %-------------------------------------------------------------------------
 % %User options
-stitched_spectra = 0;  %is this a winspec stitched spectra (i.e pixels > ccd_width ?)
-wl_calibrated = 1;    %is the winspec x-axis data calibrated ?
-new_spectrometer = 1; %is this the new black (HP) spectrometer or the old blue box
-try_fit = 1;          %try to fit the peak to a lorentzian (for cavity Q-analysis)
+stitched_spectra = 0; %is this a winspec stitched spectra (i.e pixels > ccd_width ?)
+wl_calibrated = 0;    %is the winspec x-axis data calibrated ?
+new_spectrometer = 0; %is this the new black (HP) spectrometer [NV microscope] or the old blue box [Frequency conversion]
+try_fit = 0;          %try to fit the peak to a lorentzian (for cavity Q-analysis)
 bkg_subtract = 0;     %try a crude bkg subtration (mean of the first 100 pixels)
 integrate_curve = 0;  %integrate to find area under the curve?
 save_plot_png = 0;    %save a png file?
@@ -23,6 +25,9 @@ if ~stitched_spectra && ~wl_calibrated
     
     if ~new_spectrometer %this is for the old blue box spectrometer (now on brynn mc)
         wl = 0.706.*(1:512) + center_wl-0.706*512/2; %50g grating
+        %wl =0.114.*(1:512) + center_wl-0.114*512/2; %300g grating 
+        %wl = 0.024.*(1:512) + center_wl-0.024*512/2; %1200g grating
+        %wl =0.012.*(1:512) + center_wl-0.012*512/2; %1800g grating
         full_data = zeros(length(files),1,512); 
 
     else
@@ -36,7 +41,7 @@ end
 % Iterate through the files
 for n=1:length(files)
     
-    figure; %make a figure for the final plot 
+    %figure; %make a figure for the final plot 
     
     fname = [dir cell2mat(files(n))];
     [image] = loadSPE(fname);  % extract the raw data from spe
@@ -57,7 +62,7 @@ for n=1:length(files)
     end
         
     %Make plot    
-    plot(data_x,data_y)
+    plot(data_x,data_y); hold on
     xlabel('Wavelength (nm)'); 
     ylabel('(cts/s)'); 
         
@@ -117,6 +122,9 @@ for n=1:length(files)
     if save_plot_png
         saveas(h,[files{n}(1:end-4) '.png']); 
     end
+    
+    xlabel('Wavelength (nm)');
+    ylabel('Intensity cts/s')
 end
 
 

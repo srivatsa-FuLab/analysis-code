@@ -12,42 +12,53 @@
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
+close all
+clear all
 
 % Annoying matlab
 warning('off','MATLAB:dispatcher:UnresolvedFunctionHandle')
 
+dir = 'D:\Dropbox\Projects\Angled Implant\PLE_data_mar_2021\round-2\';
+
 % User parameters (%1=Yes; 0=No;)
-autople = 1;    % Are the files saved by autople code?
-make_fig = 0;   % Show raw data with frequency axis
-show_stats = 0; % Show the scan parameters
+autople = 0;    % Are the files saved by autople code?
+make_fig = 1;   % Show raw data with frequency axis
+show_stats = 1; % Show the scan parameters
 
-processLines = 1; % Process data (1=Yes; 0=No)
+processLines = 0; % Process data (1=Yes; 0=No)
 
-    show_fits = 0;    % Show individual fits for verification (1= Manual; 0=Automated)
+    show_fits = 1;    % Show individual fits for verification (1= Manual; 0=Automated)
     gauss_fit = 0;    % Use Gaussian curve fitting
     lorentz_fit = 1;  % Use Lorentzian curve fitting
-    min_height = 7;   % Threshold for fiting (in photons/bin)
-    pix2fit = 40;     % No. of pixels to fit
+    min_height = 6;   % Threshold for fiting (in photons/bin)
+    pix2fit = 20;     % No. of pixels to fit
     
+    first_scan = 1;  % First scan # (to ignore initial laser variation)
+        % Data range for processing [Truncate scan range; useful for picking specific SB]
+        %last = upPixels-100;
+        begin = 30;
+       % last = 90;
+            
     %Final plot    
-    pretty_plot = 0;        % Make final plot with only fitted data
-        center_pixel = 264; % Where is the PLE trace?
-        plot_range = 4;     % (in GHz);
+    pretty_plot = 1;        % Make final plot with only fitted data
+        center_pixel = 193; % Where is the PLE trace?
+        plot_range = 13;     % (in GHz);
         
-make_hist=1; % Make histogram for autople data (1=Yes; 0=No)
+make_hist=0; % Make histogram for autople data (1=Yes; 0=No)
+start_wl = 637; % wavelength in nm, not critical
 
 % Piezo volt to frequency Calibration
-lambda_per_volt = 0.02348; % Updated with wavemeter measurement (March 2020)
 %lambda_per_volt = 0.02;   % Old calibration used by Emma (2019)
+%lambda_per_volt = 0.02348; % Updated with wavemeter measurement (March 2020)
 
-start_wl = 637; % wavelength in nm, not critical 
+lambda_per_volt = 0.014273;
 
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 
 % Get the files
-[fle, dirt] = uigetfile('*.mat', 'MultiSelect','on'); 
+[fle, dirt] = uigetfile([dir '*.mat'], 'MultiSelect','on'); 
 
 if iscell(fle)
     numFile = size(fle,2); 
@@ -61,7 +72,7 @@ min_width = zeros(1,numFile);
 avg_width = zeros(1,numFile);
 minwidths=[]; avgwidths=[]; scanstot = []; specdifstds = [];
 
-fprintf('\n Min width \t Avg width \t Max width \t Std. diff \t Scans \n')
+%fprintf('\n Min width \t Avg width \t Max width \t Std. diff \t Scans \n')
 
 % Iterate through all files
 for n = 1:numFile
@@ -90,6 +101,8 @@ for n = 1:numFile
     %freqAxis = freqAxis - freqAxis(round(upPixels/2)); 
     freqAxis = abs(freqAxis - freqAxis(1));
     
+    last = upPixels;
+    
 %     bkSknLmbda = linspace(637.202+0.02*voltageAxis(numPixels), 637.202+0.02*voltageAxis(1), szDown); 
 %     bkSknFreq = (2.998e8./(bkSknLmbda.*1e-9))./1e9; 
 
@@ -105,9 +118,9 @@ for n = 1:numFile
         %savefig(h1, [dirt '\' saveFname '.fig']); 
         %close(h);
         
-        hh=figure;
-        surf(scanAxis, 1:length(plotData(1,:)), plotData(:,:)'); 
-        view([0 90]); shading flat; axis tight; colormap bone; colorbar;
+%         hh=figure;
+%         surf(scanAxis, 1:length(plotData(1,:)), plotData(:,:)'); 
+%         view([0 90]); shading flat; axis tight; colormap bone; colorbar;
     end
     
     % Get stats
@@ -135,14 +148,10 @@ for n = 1:numFile
         bkscan_old = 0;
         
         % Iterate through each scans
-        for m=1:size(plotData,1);
-            
+        for m=first_scan:size(plotData,1)
+        % for m=first_scan:30  
             %----------------------------------------
-            % Data range for processing [Truncate scan range; useful for picking specific SB]
-            %begin =600;
-            %last = upPixels-100;
-            begin = 2;
-            last =  upPixels;
+
             %-----------------------------------------
             
             lineData = plotData(m, begin:last); % Truncated upscan data
@@ -296,8 +305,9 @@ for n = 1:numFile
         avg_width = mean(widths);
         max_width = max(widths);
         %max_spec_diff = max(peak(~isnan(peak)))-min(peak(~isnan(peak)));
-        std_spec_diff = std(peak(~isnan(peak)));
-
+        std_spec_diff = std(peak(~isnan(peak))).*sqrt(peak_in_scans-1);
+        
+        fprintf('\n Min width \t Avg width \t Max width \t Std. diff \t Scans \n')
         fprintf('% 1.3f \t\t %1.3f \t\t %1.3f \t\t %1.3f \t\t %d\n', min_width, avg_width, max_width, std_spec_diff, peak_in_scans)
         %close all; 
 
@@ -323,9 +333,10 @@ for n = 1:numFile
        view([-90 90]); shading flat; axis tight; colormap cool; colorbar; 
        xlabel('Scan #'); 
        ylabel('Frequency (GHz)'); 
-       load('blue_ple_cmap.mat');
-       colormap(cmap);
-       caxis([500 2500]); 
+       %load('blue_ple_cmap.mat');
+       %colormap(cmap);
+       colormap('gray')
+       %caxis([500 2500]); 
        ax = gca;
        ax.YDir = 'reverse';
         
